@@ -1,5 +1,6 @@
 """Typing test implementation"""
 
+from turtle import Turtle
 from utils import lower, split, remove_punctuation, lines_from_file
 from ucb import main, interact, trace
 from datetime import datetime
@@ -31,6 +32,8 @@ def pick(paragraphs, select, k):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    ret = list(filter(select, paragraphs))
+    return ret[k] if len(ret) > k else ''
     # END PROBLEM 1
 
 
@@ -50,6 +53,13 @@ def about(topic):
     assert all([lower(x) == x for x in topic]), 'topics should be lowercase.'
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    def ret(paragraph):
+        paragraph = split(remove_punctuation(lower(paragraph)))
+        for i in topic:
+            if i in paragraph:
+                return True
+        return False
+    return ret
     # END PROBLEM 2
 
 
@@ -80,6 +90,17 @@ def accuracy(typed, source):
     source_words = split(source)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    if len(typed_words) == 0 and len(source_words) == 0:
+        return 100.0
+    if len(typed_words) == 0 or len(source_words) == 0:
+        return 0.0   
+    correct = 0
+    for i in range(len(source_words)):
+        if i == len(typed_words):
+            break
+        if typed_words[i] == source_words[i]:
+            correct+=1
+    return 100 * correct/len(typed_words)
     # END PROBLEM 3
 
 
@@ -98,6 +119,7 @@ def wpm(typed, elapsed):
     assert elapsed > 0, 'Elapsed time must be positive'
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    return len(typed)/5/(elapsed/60)    
     # END PROBLEM 4
 
 
@@ -125,6 +147,15 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    list = [diff_function(typed_word, word, limit) for word in word_list]
+    mindiff = min(list)
+    minindex = list.index(mindiff)
+    if typed_word in word_list:
+        return typed_word
+    if  mindiff > limit:
+        return typed_word
+    return word_list[minindex]
+        
     # END PROBLEM 5
 
 
@@ -151,7 +182,22 @@ def feline_fixes(typed, source, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    length_diff = len(typed)-len(source)
+    if length_diff < 0: #reference has more characters than typed
+        typed += source[len(typed):]
+    else:
+        source += typed[len(source):]
+    start = abs(length_diff)
+    #print(typed,source)
+    def helper(w1,w2,cnt):
+        if w1 == w2:
+            return cnt
+        if cnt > limit:
+            return limit + 1
+        if w1[:1] != w2 [:1]:
+            return helper(w1[1:], w2[1:], cnt + 1)
+        return helper(w1[1:], w2[1:], cnt)
+    return helper(typed,source,start)
     # END PROBLEM 6
 
 
@@ -170,23 +216,31 @@ def minimum_mewtations(start, goal, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ______________:  # Fill in the condition
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-    elif ___________:  # Feel free to remove or add additional cases
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-    else:
-        add = ...  # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-
+    def helper(start, goal, limit, cnt):
+        
+        if start == goal:  # Fill in the condition
+            #print("cnt is ", cnt)
+            return cnt
+        if not start and not goal:  # Fill in the condition
+            return 0
+        if not start or not goal:
+            return abs(len(start) - len(goal))
+        if start[0] == goal[0]:  
+            return helper(start[1:], goal[1:], limit,cnt)
+        if limit < 0:
+            limit += 1
+            return limit
+        
+        else:
+            add =  helper(start, goal[1:], limit - 1, cnt)
+            remove = helper(start[1:], goal, limit - 1, cnt )
+            substitute = helper(start[1:], goal[1:], limit - 1, cnt)
+            #print("add is", add)
+            #print("remvoe is", remove) 
+            #print("sub is", substitute)
+        return min(add, remove, substitute) + 1
+    return helper(start, goal, limit, 0)
+    
 
 def final_diff(typed, source, limit):
     """A diff function that takes in a string TYPED, a string SOURCE, and a number LIMIT.
@@ -227,6 +281,15 @@ def report_progress(typed, prompt, user_id, upload):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    count = 0
+    for i in range(len(typed)):
+        if typed[i] == prompt[i]:
+            count += 1
+        else:
+            break
+    ratio = count / len(prompt)
+    upload({'id':user_id,'progress':ratio })
+    return ratio
     # END PROBLEM 8
 
 
@@ -249,6 +312,9 @@ def time_per_word(words, times_per_player):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    
+
+
     # END PROBLEM 9
 
 
